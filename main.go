@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"flag"
 	"fmt"
 	"io/ioutil"
@@ -41,11 +42,15 @@ func main() {
 	go func() {
 		ch <- exec.Command("comskip", "-d", "255", "--ini="+ini, "--threads="+strconv.Itoa(runtime.NumCPU()), "--hwassist", "-t", input).Run()
 	}()
+	var failed bool
 	for i := 0; i < 2; i++ {
 		err := <-ch
 		if err != nil {
-			panic(err)
+			failed = true
 		}
+	}
+	if failed {
+		panic(errors.New("Some error occurred during encoding or detecting commercials."))
 	}
 
 	log.Println("Making chp file")
